@@ -20,7 +20,7 @@ from kmodes.kmodes import KModes
 st.set_page_config('Infra debt funds',layout='wide')
 
 
-st.title('Infrastructure debt funds analysis')
+st.title('Infrastructure debt fund analysis')
 
 yearmin = 2001
 yearmax = 2022
