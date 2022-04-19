@@ -192,7 +192,7 @@ output = pd.DataFrame(kmodes.cluster_centroids_)
 output.columns = anadf.columns
 output.index = ['Segment '+str(i) for i in range(k)]
 
-output
+output.iloc[:,:-2]
 
 
 minidf['Cluster Labels']=kmodes.labels_
