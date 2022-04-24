@@ -62,24 +62,22 @@ def getuniquelist(col):
 def getdf():
     df = pd.read_excel('debt_funds_data.xlsx',sheet_name='Debt_Fund_Master_Upload').iloc[:,1:]
     df = df[(df['Vintage year']>=yearfilter[0])&(df['Vintage year']<=yearfilter[1])]
-    return df
 
-df = getdf()
+    heat1 = pd.pivot_table(df,values=regions,columns='Vintage year',aggfunc='sum')
+    heat2 = pd.pivot_table(df,values=strategies,columns='Vintage year',aggfunc='sum')
+    heat3 = pd.pivot_table(df,values=sectors,columns='Vintage year',aggfunc='sum')
+    return df,heat1,heat2,heat3
+
+df,heat1,heat2,heat3 = getdf()
 
 
 st.subheader('Funds by year')
 
-heat = pd.pivot_table(df,values=regions,columns='Vintage year',aggfunc='sum')
-cm = sns.light_palette('green',as_cmap=True)
-st.write(heat.style.background_gradient(cmap=cm,axis=None))
 
-heat = pd.pivot_table(df,values=strategies,columns='Vintage year',aggfunc='sum')
 cm = sns.light_palette('green',as_cmap=True)
-st.write(heat.style.background_gradient(cmap=cm,axis=None))
-
-heat = pd.pivot_table(df,values=sectors,columns='Vintage year',aggfunc='sum')
-cm = sns.light_palette('green',as_cmap=True)
-st.write(heat.style.background_gradient(cmap=cm,axis=None))
+st.write(heat1.style.background_gradient(cmap=cm,axis=None))
+st.write(heat2.style.background_gradient(cmap=cm,axis=None))
+st.write(heat3.style.background_gradient(cmap=cm,axis=None))
 
 
 st.image('https://images.unsplash.com/photo-1532418852691-7d16d021264c?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NDR8fGluZnJhc3RydWN0dXJlfGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=400&q=60')
@@ -121,17 +119,21 @@ with st.expander('Show data'):
 st.subheader('Co-occurrence matrix')
 st.warning('Note: there are several occurrences of multiple counts, making it sometimes difficult to reconcile numbers.')
 
-coocc = df[sectors[1:]].astype(int).T.dot(df[strategies[1:]].astype(int))
-cm = sns.light_palette('green',as_cmap=True)
-st.write(coocc.style.background_gradient(cmap=cm,axis=None))
+@st.cache(allow_output_mutation=True)
+def getmatrix():
+    coocc1 = df[sectors[1:]].astype(int).T.dot(df[strategies[1:]].astype(int))
+    coocc2 = df[regions[1:]].astype(int).T.dot(df[strategies[1:]].astype(int))
+    coocc3 = df[regions[1:]].astype(int).T.dot(df[sectors[1:]].astype(int))
+    return coocc1,coocc2,coocc3
 
-coocc = df[regions[1:]].astype(int).T.dot(df[strategies[1:]].astype(int))
-cm = sns.light_palette('green',as_cmap=True)
-st.write(coocc.style.background_gradient(cmap=cm,axis=None))
+coocc1,coocc2,coocc3 = getmatrix()
 
-coocc = df[regions[1:]].astype(int).T.dot(df[sectors[1:]].astype(int))
 cm = sns.light_palette('green',as_cmap=True)
-st.write(coocc.style.background_gradient(cmap=cm,axis=None))
+st.write(coocc1.style.background_gradient(cmap=cm,axis=None))
+st.write(coocc2.style.background_gradient(cmap=cm,axis=None))
+st.write(coocc3.style.background_gradient(cmap=cm,axis=None))
+
+
 
 st.image('https://images.unsplash.com/photo-1542463873-d913b21db820?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NTB8fGluZnJhc3RydWN0dXJlfGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=400&q=60')
 
@@ -144,20 +146,20 @@ regcol = ['Institution name','Fund name'] + regions[1:]
 minidf = df[[col for col in regcol]]
 anadf = minidf.iloc[:,2:]
 
-with st.expander('Show cluster number optimisation'):
-    # Choosing optimal K
-    cost = []
-    for cluster in range(1,12):
-        try:
-            kmodes = KModes(n_jobs = -1, n_clusters = cluster, init='Huang',random_state=0)
-            kmodes.fit_predict(anadf)
-            cost.append(kmodes.cost_)
-        except:
-            pass
-    df_cost = pd.DataFrame({'Cluster':range(1,12),'Cost':cost})
-
-    fig = px.line(df_cost,x='Cluster',y='Cost',title='Optimal number of clusters')
-    st.plotly_chart(fig)
+# with st.expander('Show cluster number optimisation'):
+#     # Choosing optimal K
+#     cost = []
+#     for cluster in range(1,12):
+#         try:
+#             kmodes = KModes(n_jobs = -1, n_clusters = cluster, init='Huang',random_state=0)
+#             kmodes.fit_predict(anadf)
+#             cost.append(kmodes.cost_)
+#         except:
+#             pass
+#     df_cost = pd.DataFrame({'Cluster':range(1,12),'Cost':cost})
+#
+#     fig = px.line(df_cost,x='Cluster',y='Cost',title='Optimal number of clusters')
+#     st.plotly_chart(fig)
 
 k = st.number_input('Please input desired number of clusters',2,12,4,key=0)
 k = int(k)
@@ -191,20 +193,20 @@ regcol = ['Institution name','Fund name'] + strategies[1:]
 minidf = df[[col for col in regcol]]
 anadf = minidf.iloc[:,2:]
 
-with st.expander('Show cluster number optimisation'):
-    # Choosing optimal K
-    cost = []
-    for cluster in range(1,12):
-        try:
-            kmodes = KModes(n_jobs = -1, n_clusters = cluster, init='Huang',random_state=0)
-            kmodes.fit_predict(anadf)
-            cost.append(kmodes.cost_)
-        except:
-            pass
-    df_cost = pd.DataFrame({'Cluster':range(1,12),'Cost':cost})
-
-    fig = px.line(df_cost,x='Cluster',y='Cost',title='Optimal number of clusters')
-    st.plotly_chart(fig)
+# with st.expander('Show cluster number optimisation'):
+#     # Choosing optimal K
+#     cost = []
+#     for cluster in range(1,12):
+#         try:
+#             kmodes = KModes(n_jobs = -1, n_clusters = cluster, init='Huang',random_state=0)
+#             kmodes.fit_predict(anadf)
+#             cost.append(kmodes.cost_)
+#         except:
+#             pass
+#     df_cost = pd.DataFrame({'Cluster':range(1,12),'Cost':cost})
+#
+#     fig = px.line(df_cost,x='Cluster',y='Cost',title='Optimal number of clusters')
+#     st.plotly_chart(fig)
 
 k = st.number_input('Please input desired number of clusters',2,12,4,key=1)
 k = int(k)
@@ -239,20 +241,20 @@ regcol = ['Institution name','Fund name'] + sectors[1:]
 minidf = df[[col for col in regcol]]
 anadf = minidf.iloc[:,2:]
 
-with st.expander('Show cluster number optimisation'):
-    # Choosing optimal K
-    cost = []
-    for cluster in range(1,12):
-        try:
-            kmodes = KModes(n_jobs = -1, n_clusters = cluster, init='Huang',random_state=0)
-            kmodes.fit_predict(anadf)
-            cost.append(kmodes.cost_)
-        except:
-            pass
-    df_cost = pd.DataFrame({'Cluster':range(1,12),'Cost':cost})
-
-    fig = px.line(df_cost,x='Cluster',y='Cost',title='Optimal number of clusters')
-    st.plotly_chart(fig)
+# with st.expander('Show cluster number optimisation'):
+#     # Choosing optimal K
+#     cost = []
+#     for cluster in range(1,12):
+#         try:
+#             kmodes = KModes(n_jobs = -1, n_clusters = cluster, init='Huang',random_state=0)
+#             kmodes.fit_predict(anadf)
+#             cost.append(kmodes.cost_)
+#         except:
+#             pass
+#     df_cost = pd.DataFrame({'Cluster':range(1,12),'Cost':cost})
+#
+#     fig = px.line(df_cost,x='Cluster',y='Cost',title='Optimal number of clusters')
+#     st.plotly_chart(fig)
 
 k = st.number_input('Please input desired number of clusters',2,12,4,key=2)
 k = int(k)
@@ -286,20 +288,20 @@ regcol = ['Institution name','Fund name'] + regions[1:] + strategies[1:] + secto
 minidf = df[[col for col in regcol]]
 anadf = minidf.iloc[:,2:]
 
-with st.expander('Show cluster number optimisation'):
-    # Choosing optimal K
-    cost = []
-    for cluster in range(1,12):
-        try:
-            kmodes = KModes(n_jobs = -1, n_clusters = cluster, init='Huang',random_state=0)
-            kmodes.fit_predict(anadf)
-            cost.append(kmodes.cost_)
-        except:
-            pass
-    df_cost = pd.DataFrame({'Cluster':range(1,12),'Cost':cost})
-
-    fig = px.line(df_cost,x='Cluster',y='Cost',title='Optimal number of clusters')
-    st.plotly_chart(fig)
+# with st.expander('Show cluster number optimisation'):
+#     # Choosing optimal K
+#     cost = []
+#     for cluster in range(1,12):
+#         try:
+#             kmodes = KModes(n_jobs = -1, n_clusters = cluster, init='Huang',random_state=0)
+#             kmodes.fit_predict(anadf)
+#             cost.append(kmodes.cost_)
+#         except:
+#             pass
+#     df_cost = pd.DataFrame({'Cluster':range(1,12),'Cost':cost})
+#
+#     fig = px.line(df_cost,x='Cluster',y='Cost',title='Optimal number of clusters')
+#     st.plotly_chart(fig)
 
 k = st.number_input('Please input desired number of clusters',2,12,4,key=3)
 k = int(k)
@@ -327,7 +329,6 @@ with st.expander('Show data'):
     minidf
 
 
-st.stop()
 
 
 
