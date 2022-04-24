@@ -98,9 +98,9 @@ with st.form('selection'):
     col1,col2,col3 = st.columns(3)
 
     with col1:
-        region = st.selectbox('Select region',regsel,4)
+        region = st.selectbox('Select region',regsel,0)
     with col2:
-        strat = st.selectbox('Select strategy',stratsel,2)
+        strat = st.selectbox('Select strategy',stratsel,0)
     with col3:
         sector = st.selectbox('Select sector',sectorsel,0)
 
