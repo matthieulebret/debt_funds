@@ -175,6 +175,10 @@ output
 minidf['Cluster Labels']=kmodes.labels_
 minidf['Segment'] = minidf['Cluster Labels'].map({i:'Segment '+str(i) for i in range(k)})
 
+splitseg = minidf.groupby('Segment')['Cluster Labels'].count()/len(minidf)
+splitseg = pd.DataFrame(splitseg).style.format('{:,.2%}')
+splitseg
+
 selectchart = st.selectbox('Select chart',['Institution > Segment > Fund Name','Segment > Institution > Fund Name'],1)
 
 if selectchart == 'Institution > Segment > Fund Name':
@@ -219,8 +223,13 @@ output.index = ['Segment '+str(i) for i in range(k)]
 
 output
 
+
 minidf['Cluster Labels']=kmodes.labels_
 minidf['Segment'] = minidf['Cluster Labels'].map({i:'Segment '+str(i) for i in range(k)})
+
+splitseg = minidf.groupby('Segment')['Cluster Labels'].count()/len(minidf)
+splitseg = pd.DataFrame(splitseg).style.format('{:,.2%}')
+splitseg
 
 selectchart = st.selectbox('Select chart',['Institution > Segment > Fund Name','Segment > Institution > Fund Name'],1,key=1)
 
@@ -270,6 +279,11 @@ output
 minidf['Cluster Labels']=kmodes.labels_
 minidf['Segment'] = minidf['Cluster Labels'].map({i:'Segment '+str(i) for i in range(k)})
 
+splitseg = minidf.groupby('Segment')['Cluster Labels'].count()/len(minidf)
+splitseg = pd.DataFrame(splitseg).style.format('{:,.2%}')
+splitseg
+
+
 selectchart = st.selectbox('Select chart',['Institution > Segment > Fund Name','Segment > Institution > Fund Name'],1,key=2)
 
 if selectchart == 'Institution > Segment > Fund Name':
@@ -316,6 +330,10 @@ output
 
 minidf['Cluster Labels']=kmodes.labels_
 minidf['Segment'] = minidf['Cluster Labels'].map({i:'Segment '+str(i) for i in range(k)})
+
+splitseg = minidf.groupby('Segment')['Cluster Labels'].count()/len(minidf)
+splitseg = pd.DataFrame(splitseg).style.format('{:,.2%}')
+splitseg
 
 selectchart = st.selectbox('Select chart',['Institution > Segment > Fund Name','Segment > Institution > Fund Name'],1,key=3)
 
