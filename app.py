@@ -231,7 +231,7 @@ splitseg = minidf.groupby('Segment')['Cluster Labels'].count()/len(minidf)
 splitseg = pd.DataFrame(splitseg).style.format('{:,.2%}')
 splitseg
 
-selectchart = st.selectbox('Select chart',['Institution > Segment > Fund Name','Segment > Institution > Fund Name'],1,key=1)
+selectchart = st.selectbox('Select chart',['Institution > Segment > Fund Name','Segment > Institution > Fund Name'],1,key=2)
 
 if selectchart == 'Institution > Segment > Fund Name':
     fig = px.treemap(minidf,path=['Institution name','Segment','Fund name'],color='Segment')
@@ -247,58 +247,6 @@ with st.expander('Show data'):
 st.subheader('Segmentation by Sector')
 
 regcol = ['Institution name','Fund name'] + sectors[1:]
-minidf = df[[col for col in regcol]]
-anadf = minidf.iloc[:,2:]
-
-# with st.expander('Show cluster number optimisation'):
-#     # Choosing optimal K
-#     cost = []
-#     for cluster in range(1,12):
-#         try:
-#             kmodes = KModes(n_jobs = -1, n_clusters = cluster, init='Huang',random_state=0)
-#             kmodes.fit_predict(anadf)
-#             cost.append(kmodes.cost_)
-#         except:
-#             pass
-#     df_cost = pd.DataFrame({'Cluster':range(1,12),'Cost':cost})
-#
-#     fig = px.line(df_cost,x='Cluster',y='Cost',title='Optimal number of clusters')
-#     st.plotly_chart(fig)
-
-k = st.number_input('Please input desired number of clusters',2,12,4,key=2)
-k = int(k)
-
-kmodes = KModes(n_jobs=-1,n_clusters=k,init='Huang',random_state=0)
-kmodes.fit_predict(anadf)
-output = pd.DataFrame(kmodes.cluster_centroids_)
-output.columns = anadf.columns
-output.index = ['Segment '+str(i) for i in range(k)]
-
-output
-
-minidf['Cluster Labels']=kmodes.labels_
-minidf['Segment'] = minidf['Cluster Labels'].map({i:'Segment '+str(i) for i in range(k)})
-
-splitseg = minidf.groupby('Segment')['Cluster Labels'].count()/len(minidf)
-splitseg = pd.DataFrame(splitseg).style.format('{:,.2%}')
-splitseg
-
-
-selectchart = st.selectbox('Select chart',['Institution > Segment > Fund Name','Segment > Institution > Fund Name'],1,key=2)
-
-if selectchart == 'Institution > Segment > Fund Name':
-    fig = px.treemap(minidf,path=['Institution name','Segment','Fund name'],color='Segment')
-else:
-    fig = px.treemap(minidf,path=['Segment','Institution name','Fund name'],color='Institution name')
-st.plotly_chart(fig,use_container_width=True)
-
-with st.expander('Show data'):
-    minidf
-
-
-st.subheader('Segmentation by Region, Strategy, Sector')
-
-regcol = ['Institution name','Fund name'] + regions[1:] + strategies[1:] + sectors[1:]
 minidf = df[[col for col in regcol]]
 anadf = minidf.iloc[:,2:]
 
@@ -335,7 +283,59 @@ splitseg = minidf.groupby('Segment')['Cluster Labels'].count()/len(minidf)
 splitseg = pd.DataFrame(splitseg).style.format('{:,.2%}')
 splitseg
 
-selectchart = st.selectbox('Select chart',['Institution > Segment > Fund Name','Segment > Institution > Fund Name'],1,key=3)
+
+selectchart = st.selectbox('Select chart',['Institution > Segment > Fund Name','Segment > Institution > Fund Name'],1,key=4)
+
+if selectchart == 'Institution > Segment > Fund Name':
+    fig = px.treemap(minidf,path=['Institution name','Segment','Fund name'],color='Segment')
+else:
+    fig = px.treemap(minidf,path=['Segment','Institution name','Fund name'],color='Institution name')
+st.plotly_chart(fig,use_container_width=True)
+
+with st.expander('Show data'):
+    minidf
+
+
+st.subheader('Segmentation by Region, Strategy, Sector')
+
+regcol = ['Institution name','Fund name'] + regions[1:] + strategies[1:] + sectors[1:]
+minidf = df[[col for col in regcol]]
+anadf = minidf.iloc[:,2:]
+
+# with st.expander('Show cluster number optimisation'):
+#     # Choosing optimal K
+#     cost = []
+#     for cluster in range(1,12):
+#         try:
+#             kmodes = KModes(n_jobs = -1, n_clusters = cluster, init='Huang',random_state=0)
+#             kmodes.fit_predict(anadf)
+#             cost.append(kmodes.cost_)
+#         except:
+#             pass
+#     df_cost = pd.DataFrame({'Cluster':range(1,12),'Cost':cost})
+#
+#     fig = px.line(df_cost,x='Cluster',y='Cost',title='Optimal number of clusters')
+#     st.plotly_chart(fig)
+
+k = st.number_input('Please input desired number of clusters',2,12,4,key=5)
+k = int(k)
+
+kmodes = KModes(n_jobs=-1,n_clusters=k,init='Huang',random_state=0)
+kmodes.fit_predict(anadf)
+output = pd.DataFrame(kmodes.cluster_centroids_)
+output.columns = anadf.columns
+output.index = ['Segment '+str(i) for i in range(k)]
+
+output
+
+minidf['Cluster Labels']=kmodes.labels_
+minidf['Segment'] = minidf['Cluster Labels'].map({i:'Segment '+str(i) for i in range(k)})
+
+splitseg = minidf.groupby('Segment')['Cluster Labels'].count()/len(minidf)
+splitseg = pd.DataFrame(splitseg).style.format('{:,.2%}')
+splitseg
+
+selectchart = st.selectbox('Select chart',['Institution > Segment > Fund Name','Segment > Institution > Fund Name'],1,key=6)
 
 if selectchart == 'Institution > Segment > Fund Name':
     fig = px.treemap(minidf,path=['Institution name','Segment','Fund name'],color='Segment')
